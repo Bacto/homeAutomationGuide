@@ -24,15 +24,16 @@ python3 setup.py install
 ## Download firmware
 
 Get last version on https://github.com/arendst/Tasmota/releases/.
-Then `wget https://github.com/arendst/Tasmota/releases/download/v12.2.0/tasmota.bin`
+Then `wget https://github.com/arendst/Tasmota/releases/download/v12.3.1/tasmota.bin`
 
 
 ## Flash
 
 Simply use:
-`esptool.py write_flash -fm dout 0x0 tasmota.bin`
+`esptool.py --baud 921600 write_flash --erase-all -fm dout 0x0 tasmota.bin`
 
 
 ## Configure
 
 Reboot the device and connect to the WiFi access point "tasmota-xxxxx" created by the device.
+Then connect to http://192.168.1.4
