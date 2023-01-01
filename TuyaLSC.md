@@ -66,7 +66,7 @@ HomeBridge configuration:
   "confirmationIndicateOffline": true,
   "integerValue": true,
   "hex": true,
-  "noWhiteMix": true,
+  "noWhiteMix": false,
   "switchWhites": true,
   "accessory": "mqttthing"
 }
@@ -124,7 +124,7 @@ HomeBridge configuration:
   "confirmationIndicateOffline": true,
   "integerValue": true,
   "hex": true,
-  "noWhiteMix": true,
+  "noWhiteMix": false,
   "switchWhites": true,
   "accessory": "mqttthing"
 }
@@ -271,7 +271,7 @@ HomeBridge configuration:
   "confirmationIndicateOffline": true,
   "integerValue": true,
   "hex": true,
-  "noWhiteMix": true,
+  "noWhiteMix": false,
   "switchWhites": true,
   "accessory": "mqttthing"
 }

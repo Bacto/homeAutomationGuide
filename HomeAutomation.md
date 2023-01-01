@@ -1,7 +1,20 @@
-# HomeBridge
+# Home Automation
 
+HomeAssistant: permits to controls home automation devices.
+HomeBridge: permits to control home automation devices with HomeKit (Apple native system).
 
-## Mosquitto
+Here I install both of them, so I can control my devices with HomeKit from my iPhone, Macbook, Apple TV and Siri easily.
+And HomeAssistant to try it and maybe use it for advanced scenarios, because Apple HomeKit is limited.
+
+All of this is running on Linux with Docker, on a Raspberry or any computer.
+
+## MQTT server
+
+We use Mosquitto as MQTT server.
+MQTT is a lightweight protocol ideal for realtime communications between devices.
+
+In our case, each device will connect to MQTT.
+Then HomeAssistant and HomeBridge will connect to it to communicate with devices.
 
 ### Create Mosquitto configuration
 
@@ -9,7 +22,7 @@
 mkdir -p /mosquitto/config
 nano /mosquitto/config/mosquitto.conf
 persistence true
-persistence_location /mosquitto/data/
+persistence_location /mosquitto/data
 log_dest stdout
 
 allow_anonymous false
@@ -34,6 +47,16 @@ mosquitto_passwd /mosquitto/passwords homebridge
 
 
 ## Zigbee2MQTT
+
+Zigbee is a great radio protocol.
+A lot of devices use Zigbee, like some Ikea devices.
+It is power efficient so devices can run on battery, like remotes, doors sensors etc...
+Devices are cheap: a door sensor is for example ~5€.
+
+Zigbee2MQTT handles Zigbee data and send them to MQTT.
+It needs a USB key (SONOFF ZBDongle in my case) which is connected to the Raspberry Pi.
+It has a nice web UI that gives the ability to associate devices easily.
+
 
 ### Create Zigbee2MQTT configuration
 
@@ -62,6 +85,9 @@ advanced:
   network_key: GENERATE
   # It is recommended to disable cache state. See https://z2m.dev/install.html
   cache_state: true
+
+advanced:
+  log_level: warn
 ```
 
 
@@ -79,14 +105,23 @@ services:
     network_mode: "host"
     volumes:
       - /homebridge:/homebridge
-    logging:
-      driver: json-file
-      options:
-        max-size: "10mb"
-        max-file: "1"
+    environment:
+      - TZ=Europe/Paris
     extra_hosts:
       - "mosquitto:192.168.1.12"
-  # -e TZ - for timezone information e.g. -e TZ=Australia/Canberra
+
+  homeassistant:
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    container_name: "homeassistant"
+    hostname: "homeassistant"
+    restart: unless-stopped
+    network_mode: "host"
+    volumes:
+      - /homeassistant:/config
+    environment:
+      - TZ=Europe/Paris
+    extra_hosts:
+      - "mosquitto:192.168.1.12"
 
   mosquitto:
     image: "eclipse-mosquitto:2.0.15"
@@ -97,11 +132,6 @@ services:
       - "1883:1883"
     volumes:
       - /mosquitto:/mosquitto
-    logging:
-      driver: json-file
-      options:
-        max-size: "10mb"
-        max-file: "1"
 
   zigbee2mqtt:
     image: koenkk/zigbee2mqtt:1.28.4
@@ -122,29 +152,23 @@ services:
 docker-compose up -d
 
 
-Got to http://192.168.1.12:8581/ for HomeBridge.
-Got to http://192.168.1.12:8080/ for Zigbee2MQTT.
+Go to http://192.168.1.12:8581 for HomeBridge.
+Go to http://192.168.1.12:8123 for HomeAutomation.
+Go to http://192.168.1.12:8080 for Zigbee2MQTT.
 
 
-## Debug MQTT
+## Configuration examples
 
-docker exec -it mosquitto /bin/sh
+### HomeAssistant
 
-Subscribe: `mosquitto_sub -h 127.0.0.1 -u homebridge -P <password> -t '#' -v`
-Publish: `mosquitto_pub -h 127.0.0.1 -u homebridge -P <password> -t '#' -m 'message'`
+MQTT integration has to be added in "Settings".
 
-Example of messages that can be send to openshw:
-https://github.com/openshwprojects/OpenBK7231T_App#console-commands
-
-## Configuration example
-
+### HomeBridge
 ```yaml
 {
     "bridge": {
-        "name": "Homebridge 6D36",
-        "username": "0E:17:BB:A9:6D:36",
+        "name": "Homebridge",
         "port": 51961,
-        "pin": "784-94-320",
         "advertiser": "bonjour-hap"
     },
     "accessories": [
@@ -171,7 +195,7 @@ https://github.com/openshwprojects/OpenBK7231T_App#console-commands
             "confirmationIndicateOffline": true,
             "integerValue": true,
             "hex": true,
-            "noWhiteMix": true,
+            "noWhiteMix": false,
             "switchWhites": true,
             "accessory": "mqttthing"
         },
@@ -212,4 +236,12 @@ https://github.com/openshwprojects/OpenBK7231T_App#console-commands
 
 ## MQTT
 
+docker exec -it mosquitto /bin/sh
+
 Clear a retained message: `mosquitto_pub -h 127.0.0.1 -u <username> -P <password> -t '<topic>' -n -r`
+Subscribe: `mosquitto_sub -h 127.0.0.1 -u homebridge -P <password> -t '#' -v`
+Publish: `mosquitto_pub -h 127.0.0.1 -u homebridge -P <password> -t '#' -m 'message'`
+
+Example of messages that can be send to openshw:
+https://github.com/openshwprojects/OpenBK7231T_App#console-commands
+
