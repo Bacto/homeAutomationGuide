@@ -94,9 +94,54 @@ advanced:
 
 ## Start containers
 
+```bash
+mkdir -p /traefik
+cat << 'EOF' > /traefik/configuration.yml
+http:
+  routers:
+    traefik-dashboard:
+      entryPoints:
+        - dashboard
+      priority: 1000
+      tls:
+        certresolver: letsencrypt
+      middlewares:
+        - traefik-dashboard-auth
+      service: api@internal
+#      rule: Host(`{{ domain }}`)
+
+#  middlewares:
+#    traefik-dashboard-auth:
+#      basicAuth:
+#        users:
+#        - {{ dashboard.login }}:{{ dashboard.passwordHashed }}
+EOF
+
+
+mkdir /node-red
+chown 1000:1000 /node-red
+```
+
+TODO:
+- node-red
+- traefik to containers
+- close ports from containers
+- what about ports opened in homeassitant?
+
 ```yaml
 version: "3.8"
 services:
+  traefik:
+    image: "traefik:v2.9.6"
+    container_name: "traefik"
+    hostname: "traefik"
+    restart: unless-stopped
+    volumes:
+      - /traefik/configuration.yml:/etc/traefik/traefik.yml
+    ports:
+      - 80:80
+      - 443:443
+
   homebridge:
     image: "oznu/homebridge:2022-10-14"
     container_name: "homebridge"
@@ -105,8 +150,6 @@ services:
     network_mode: "host"
     volumes:
       - /homebridge:/homebridge
-    environment:
-      - TZ=Europe/Paris
     extra_hosts:
       - "mosquitto:192.168.1.12"
 
@@ -118,10 +161,21 @@ services:
     network_mode: "host"
     volumes:
       - /homeassistant:/config
-    environment:
-      - TZ=Europe/Paris
+      # Useful for Bluetooth
+      - /run/dbus:/run/dbus:ro
     extra_hosts:
       - "mosquitto:192.168.1.12"
+
+  node-red:
+    # See https://github.com/node-red/node-red-docker#image-variations
+    image: "nodered/node-red:3.0.2-18-minimal"
+    container_name: "node-red"
+    hostname: "node-red"
+    restart: unless-stopped
+    volumes:
+      - /node-red:/data
+    ports:
+      - 1880:1880
 
   mosquitto:
     image: "eclipse-mosquitto:2.0.15"
@@ -134,7 +188,7 @@ services:
       - /mosquitto:/mosquitto
 
   zigbee2mqtt:
-    image: koenkk/zigbee2mqtt:1.28.4
+    image: "koenkk/zigbee2mqtt:1.30.0"
     container_name: zigbee2mqtt
     restart: unless-stopped
     volumes:
@@ -142,8 +196,6 @@ services:
       - /run/udev:/run/udev:ro
     ports:
       - 8080:8080
-    environment:
-      - TZ=Europe/Paris
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
 ```

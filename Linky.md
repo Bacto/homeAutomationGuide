@@ -92,6 +92,13 @@ We have to compile it manually. Thanks to Docker it will be easy :)
 #### Compile Tasmota with Teleinfo
 
 ```bash
+# Prepare container to build the firmware
+# We need to build the image as it is only for AMD64 on hub.docker.com
+git clone https://github.com/tasmota/docker-tasmota
+cd docker-tasmota
+docker build -t docker-tasmota .
+
+
 # Clone Tasmota. Set the version to the last one available on https://github.com/arendst/Tasmota/releases
 export TASMOTA_VERSION=v12.3.1
 git clone --depth=1 https://github.com/arendst/Tasmota.git -b ${TASMOTA_VERSION} /tmp/tasmota
@@ -100,12 +107,28 @@ cd /tmp/tasmota
 # Add Teleinfo feature
 echo '#define USE_TELEINFO' >> tasmota/user_config_override.h
 
-# Compile using Docker
-docker run -it -v /tmp/tasmota:/tasmota blakadder/docker-tasmota -e tasmota
+# Compiling using Docker.
+docker run -it -v /tmp/tasmota:/tasmota docker-tasmota -e tasmota
 
-# The firmware is here. Get it and update the ESP8266 with it using OTA (connect to the web interface, the "Firmware Upgrade" and put the firmware file).
+# The firmware is here.
 ls -al /tmp/tasmota/build_output/firmware/tasmota.bin.gz
 ```
+
+Flash it with OTA or with serial connection.
+
+Example using serial connection:
+```bash
+docker run -it -v /dev:/dev -v $PWD:/mnt --privileged ubuntu:20.04
+
+apt-get update \
+  && apt-get install git python3 python3-setuptools wget \
+  && git clone https://github.com/espressif/esptool \
+  && cd esptool \
+  && python3 setup.py install
+
+esptool.py --baud 921600 write_flash --erase-all -fm dout 0x0 /mnt/build_output/firmware/tasmota.bin
+```
+
 
 > Handle error "Not enough space":
 > If the binary is larger than 500kb (which should be the case), the ESP will not have enough space to upgrade its firmware.
@@ -117,7 +140,9 @@ ls -al /tmp/tasmota/build_output/firmware/tasmota.bin.gz
 
 Connect to your ESP8266, go to "Configuration"/"Configure Module" and:
 - In "Module type", select "Generic (0)".
-- In "RX GPIO3", select "TInfo RX".
+- Save
+- In "RX GPIO3", select "TInfo Rx".
+- Save
 
 Then go to the main page and click on "Console" and configure Teleinfo to use the "Standard" mode: `EnergyConfig standard`
 

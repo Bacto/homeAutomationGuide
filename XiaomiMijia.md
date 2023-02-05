@@ -11,12 +11,26 @@ By default data exchanged in bluetooth are encrypted.
 We can simply disable this by flashing it with a custom firmware.
 
 
-## Custom firmware
+## Flash firmware
 
 See https://github.com/pvvx/ATC_MiThermometer
-It is done very easily from a phone or a computer with a browser that supports bluetooth (like Chrome).
 
-Once done, configure it like this:
+Use a browser that supports bluetooth (like Chrome).
+
+- Go to https://pvvx.github.io/ATC_MiThermometer/TelinkMiFlasher.html
+- Click on "Connect"
+- Wait for a device like "LYWS..."
+- Click on "Do Activation"
+- Click on "Custom Firmware ver ..."
+- Click "Start flashing"
+- Wait for "Update done after ..." in logs
+- Click on "Connect"
+- Select the "ATC_...". Restart the browser if it doesn't work.
+
+
+## Configure firmware
+
+Configure it like this:
 - In "Send settings to custom firmware"
   - Set "advertising type" to "MIJIA (MiHome)"
   - To reduce battery consumption:
@@ -26,6 +40,7 @@ Once done, configure it like this:
 - Set name to something like "temp_1" and click "Set new name"
 - Set temperature low to "20.99" and click "Set comfort parameters"
 - Get the MAC address: click on "Show all mi keys", copy the "Device MAC" and remove the 4 last characters. It will be needed for Homebridge configuration.
+
 
 
 ## Use it with Homebridge

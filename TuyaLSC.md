@@ -34,7 +34,7 @@ Pinout :
 - P24: PWM, channel 2
 - P26: PWM, channel 3
 
-- Activate flags 10, 16, 17 and 18
+- Activate flags 10, 16, 17, 18, 27
 - Uptime seconds required to mark boot as ok to 5
 
 
@@ -81,7 +81,7 @@ Pinout :
 - P24: clock (`BP5758D_CLK`)
 - P26: data (`BP5758D_DAT`)
 
-- Activate flags 4, 10, 16, 17 and 18
+- Activate flags 4, 10, 16, 17, 18, 27
 - Uptime seconds required to mark boot as ok to 5
 
 Click on "Return menu", then "Launch Web Application".
@@ -139,7 +139,7 @@ https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq
 
 In "OpenBK7231T_App", "Quick Config", select "[BK7231N][CB2S] LSC Smart Connect Plug"
 
-- Activate flag 10
+- Activate flags 10, 27
 
 mosquitto_pub -h 127.0.0.1 -u <username> -P <password> -t '<clientId>/1/set' -m 1
 mosquitto_pub -h 127.0.0.1 -u <username> -P <password> -t '<clientId>/1/set' -m 0
@@ -187,7 +187,7 @@ The box has to be destroyed as it is super glued :-/
 - Pin 24: green, channel 1
 - Pin 26: red, channel 0
 
-Activate flags 10, 16, 17, 18
+Activate flags 10, 16, 17, 18, 27
 
 HomeBridge configuration:
 ```json
@@ -231,7 +231,7 @@ https://developer.tuya.com/en/docs/iot/wblc5-module-datasheet?id=K9duilns1f3gi
 - Pin 24 (warm) => PWM, channel 1
 - Pin 26 (cold) => PWM, channel 0
 
-- Activate flags 10, 17, 18
+- Activate flags 10, 17, 18, 27
 - Uptime seconds required to mark boot as ok to 5
 
 Click on "Return menu", then "Launch Web Application".
