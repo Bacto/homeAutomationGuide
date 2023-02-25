@@ -118,12 +118,11 @@ http:
 EOF
 
 
-mkdir /node-red
-chown 1000:1000 /node-red
+# mkdir /node-red
+# chown 1000:1000 /node-red
 ```
 
 TODO:
-- node-red
 - traefik to containers
 - close ports from containers
 - what about ports opened in homeassitant?
@@ -166,16 +165,16 @@ services:
     extra_hosts:
       - "mosquitto:192.168.1.12"
 
-  node-red:
-    # See https://github.com/node-red/node-red-docker#image-variations
-    image: "nodered/node-red:3.0.2-18-minimal"
-    container_name: "node-red"
-    hostname: "node-red"
-    restart: unless-stopped
-    volumes:
-      - /node-red:/data
-    ports:
-      - 1880:1880
+  # node-red:
+  #   # See https://github.com/node-red/node-red-docker#image-variations
+  #   image: "nodered/node-red:3.0.2-18-minimal"
+  #   container_name: "node-red"
+  #   hostname: "node-red"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /node-red:/data
+  #   ports:
+  #     - 1880:1880
 
   mosquitto:
     image: "eclipse-mosquitto:2.0.15"
@@ -296,4 +295,3 @@ Publish: `mosquitto_pub -h 127.0.0.1 -u homebridge -P <password> -t '#' -m 'mess
 
 Example of messages that can be send to openshw:
 https://github.com/openshwprojects/OpenBK7231T_App#console-commands
-

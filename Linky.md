@@ -20,7 +20,7 @@ Sources:
 ### Power supply
 
 The TIC can supply power, between `A` and `I1` connectors.
-This power supply is not powerful at all and can't power an ESP8266. Don't loose time on it like I did.
+This power supply is not powerful at all and can't power an ESP. Don't loose time on it like I did.
 
 It's an alternative courant supply, 12v peak to peak.
 6 Vrms ± 10% at 50 kHz with 130 MW minimum.
@@ -29,7 +29,7 @@ It's an alternative courant supply, 12v peak to peak.
 ### Data
 
 Data is modulated on a 50kHz carrier (amplitude modulation) on `I1` and `I2` connectors.
-It's basically a serial port that can't be connected directly to an ESP8266. You'll have to create a small electronic "converter".
+It's basically a serial port that can't be connected directly to an ESP. You'll have to create a small electronic "converter".
 
 You'll find a simple example here (which works for me):
 https://faire-ca-soi-meme.fr/domotique/2016/09/12/module-teleinformation-tic/
@@ -68,7 +68,7 @@ Merci d'avance,
 ```
 
 
-## ESP8266
+## ESP
 
 Connect serial to GPIO3 (RX).
 
@@ -88,6 +88,9 @@ See https://tasmota.github.io/docs/Teleinfo/
 Teleinfo feature is not available in Tasmota precompiled binaries.
 We have to compile it manually. Thanks to Docker it will be easy :)
 
+> ⚠️ With an ESP8266, when serial data is received, the MCU reboots for an unknown reason (memory issue?).
+> We have to use and ESP32 to resolve this. Officially Teleinfo works with ESP8266 but not really tested, no support is offered for it and ESP32 is recommanded.
+
 
 #### Compile Tasmota with Teleinfo
 
@@ -100,7 +103,7 @@ docker build -t docker-tasmota .
 
 
 # Clone Tasmota. Set the version to the last one available on https://github.com/arendst/Tasmota/releases
-export TASMOTA_VERSION=v12.3.1
+export TASMOTA_VERSION=v12.4.0
 git clone --depth=1 https://github.com/arendst/Tasmota.git -b ${TASMOTA_VERSION} /tmp/tasmota
 cd /tmp/tasmota
 
@@ -108,10 +111,18 @@ cd /tmp/tasmota
 echo '#define USE_TELEINFO' >> tasmota/user_config_override.h
 
 # Compiling using Docker.
-docker run -it -v /tmp/tasmota:/tasmota docker-tasmota -e tasmota
+#
+# For an ESP8266:
+# docker run -it -v /tmp/tasmota:/tasmota docker-tasmota -e tasmota
+#
+# For an ESP32:
+docker run -it -v /tmp/tasmota:/tasmota docker-tasmota -e tasmota32
 
-# The firmware is here.
-ls -al /tmp/tasmota/build_output/firmware/tasmota.bin.gz
+# The firmware is here:
+ls -al /tmp/tasmota/build_output/firmware/*.bin
+
+# tasmota32.factory.bin: Factory binaries to be used for inital flashing using esptool
+# tasmota32.bin: OTA firmware
 ```
 
 Flash it with OTA or with serial connection.
@@ -126,7 +137,11 @@ apt-get update \
   && cd esptool \
   && python3 setup.py install
 
-esptool.py --baud 921600 write_flash --erase-all -fm dout 0x0 /mnt/build_output/firmware/tasmota.bin
+# For an ESP8266
+# esptool.py --baud 921600 write_flash --erase-all -fm dout 0x0 /mnt/build_output/firmware/tasmota.bin
+
+# For an ESP32
+esptool.py --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dout --flash_size detect 0x0 /mnt/build_output/firmware/tasmota32.factory.bin
 ```
 
 
@@ -138,13 +153,14 @@ esptool.py --baud 921600 write_flash --erase-all -fm dout 0x0 /mnt/build_output/
 
 #### Configure Teleinfo
 
-Connect to your ESP8266, go to "Configuration"/"Configure Module" and:
-- In "Module type", select "Generic (0)".
-- Save
-- In "RX GPIO3", select "TInfo Rx".
-- Save
-
-Then go to the main page and click on "Console" and configure Teleinfo to use the "Standard" mode: `EnergyConfig standard`
+Connect to your ESP:
+- In "Configuration"/"Configure Module"
+  - Configure pin out depending on the board: https://github.com/hallard/WeMos-TIC#detailed-description
+- Configure MQTT
+- Configure name and password in "Configure Other"
+- In "Configure Logging", set "Telemetry period" to 10 (report every 10 seconds to MQTT)
+- In "Console" and configure Teleinfo to use the "Standard" mode: `EnergyConfig standard`
+- Restart
 
 
 ### Tasmota manual configuration (not recommanded)
