@@ -130,30 +130,30 @@ TODO:
 ```yaml
 version: "3.8"
 services:
-  traefik:
-    image: "traefik:v2.9.6"
-    container_name: "traefik"
-    hostname: "traefik"
-    restart: unless-stopped
-    volumes:
-      - /traefik/configuration.yml:/etc/traefik/traefik.yml
-    ports:
-      - 80:80
-      - 443:443
+  # traefik:
+  #   image: "traefik:v2.9.6"
+  #   container_name: "traefik"
+  #   hostname: "traefik"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /traefik/configuration.yml:/etc/traefik/traefik.yml
+  #   ports:
+  #     - 80:80
+  #     - 443:443
 
-  homebridge:
-    image: "oznu/homebridge:2022-10-14"
-    container_name: "homebridge"
-    hostname: "homebridge"
-    restart: unless-stopped
-    network_mode: "host"
-    volumes:
-      - /homebridge:/homebridge
-    extra_hosts:
-      - "mosquitto:192.168.1.12"
+  # homebridge:
+  #   image: "oznu/homebridge:2022-10-14"
+  #   container_name: "homebridge"
+  #   hostname: "homebridge"
+  #   restart: unless-stopped
+  #   network_mode: "host"
+  #   volumes:
+  #     - /homebridge:/homebridge
+  #   extra_hosts:
+  #     - "mosquitto:192.168.1.12"
 
   homeassistant:
-    image: "ghcr.io/home-assistant/home-assistant:stable"
+    image: "ghcr.io/home-assistant/home-assistant:2023.3.1"
     container_name: "homeassistant"
     hostname: "homeassistant"
     restart: unless-stopped
@@ -187,7 +187,7 @@ services:
       - /mosquitto:/mosquitto
 
   zigbee2mqtt:
-    image: "koenkk/zigbee2mqtt:1.30.0"
+    image: "koenkk/zigbee2mqtt:1.30.4"
     container_name: zigbee2mqtt
     restart: unless-stopped
     volumes:
@@ -295,3 +295,18 @@ Publish: `mosquitto_pub -h 127.0.0.1 -u homebridge -P <password> -t '#' -m 'mess
 
 Example of messages that can be send to openshw:
 https://github.com/openshwprojects/OpenBK7231T_App#console-commands
+
+
+## Issues
+
+After a certain time, bluetooth is not working anymore:
+```
+ERROR (MainThread) [homeassistant.components.bluetooth.scanner] hci0 (43:45:C0:00:1F:AC): Error stopping scanner: [org.bluez.Error.InProgress] Operation already in progress#033[0m
+ERROR (Bot:879454005:dispatcher) [homeassistant.components.telegram_bot.polling] Update "None" caused error: "Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"#033[0m
+WARNING (MainThread) [bluetooth_auto_recovery.recover] Bluetooth adapter hci0 [43:45:C0:00:1F:AC] could not be reset due to timeout#033[0m
+WARNING (MainThread) [bluetooth_auto_recovery.recover] Bluetooth management socket connection lost: [Errno 9] Bad file descriptor#033[0m
+```
+
+Seen on a Raspberry 3 B Plus, kernel 5.15.93-0-rpi.
+Not sure about the reason but there is lot of threads about this.
+For now, the easy solution is to use an external USB Bluetooth key.

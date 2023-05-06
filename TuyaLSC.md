@@ -37,6 +37,12 @@ Pinout :
 - Activate flags 10, 16, 17, 18, 27
 - Uptime seconds required to mark boot as ok to 5
 
+- To disable automatic power on
+  - Click on "Filesystem"/"Create File" and name it "early.bat".
+  - Click on "/early.bat", and set `backlog ; led_dimmer 0 ; led_basecolor_rgbcw #0000000000 ; led_enableAll 0`
+  - Click on "Save".
+
+
 
 HomeBridge configuration:
 ```json
@@ -137,9 +143,15 @@ The WiFi module is a CB2S from Tuya and supports Bluetooth too.
 The SOC used is the BK7231N.
 https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq
 
-In "OpenBK7231T_App", "Quick Config", select "[BK7231N][CB2S] LSC Smart Connect Plug"
-
 - Activate flags 10, 27
+- In "OpenBK7231T" web application
+  - In "Config", select "BK7231N" then "LSC Smart Connect Plug 2578677 970764"
+  - Then set pin 8 from `WifiLED` to `WifiLED_n` and click "Save pins"
+
+- To disable automatic power on
+  - Click on "Filesystem"/"Create File" and name it "early.bat".
+  - Click on "/early.bat", and set `power off`
+  - Click on "Save".
 
 mosquitto_pub -h 127.0.0.1 -u <username> -P <password> -t '<clientId>/1/set' -m 1
 mosquitto_pub -h 127.0.0.1 -u <username> -P <password> -t '<clientId>/1/set' -m 0
