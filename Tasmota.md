@@ -21,7 +21,7 @@ docker build -t docker-tasmota .
 
 
 # Clone Tasmota. Set the version to the last one available on https://github.com/arendst/Tasmota/releases
-export TASMOTA_VERSION=v12.4.0
+export TASMOTA_VERSION=v12.5.0
 git clone --depth=1 https://github.com/arendst/Tasmota.git -b ${TASMOTA_VERSION} /tmp/tasmota
 cd /tmp/tasmota
 
@@ -103,7 +103,7 @@ esptool.py --chip esp32 --baud 921600 --before default_reset --after hard_reset 
 ```
 
 
-> Handle error "Not enough space":
+> Handle error "Not enough space" (ESP8266 only!):
 > If the binary is larger than 500kb (which should be the case), the ESP will not have enough space to upgrade its firmware.
 > In that case, flash it using the "Upgrade by web server" part and put this URL: `http://ota.tasmota.com/tasmota/release/tasmota-minimal.bin.gz`.
-> Then flash it again with firmware that includes "Teleinfo".
+> Then flash it again with the real firmware.
