@@ -19,30 +19,33 @@ Then HomeAssistant and HomeBridge will connect to it to communicate with devices
 ### Create Mosquitto configuration
 
 ```bash
+mkdir -p /mosquitto/data
+chown 1883:1883 /mosquitto/data
+
 mkdir -p /mosquitto/config
 nano /mosquitto/config/mosquitto.conf
 persistence true
-persistence_location /mosquitto/data
+persistence_location /mosquittoVolume/data
 log_dest stdout
 
 allow_anonymous false
-password_file /mosquitto/passwords
+password_file /mosquittoVolume/passwords
 listener 1883
 ```
 
 ### Generate Mosquitto passwords
 
 ```bash
-docker run -it -v /mosquitto:/mosquitto eclipse-mosquitto:2.0.15 /bin/sh
+docker run -it -v /mosquitto:/mosquittoVolume eclipse-mosquitto:2.0.15 /bin/sh
 
 apk add pwgen
-touch /mosquitto/passwords
-chmod 600 /mosquitto/passwords
+touch /mosquittoVolume/passwords
+chmod 600 /mosquittoVolume/passwords
 
 # Generate secured password with `pwgen -s 64 1`
 
-mosquitto_passwd /mosquitto/passwords devices
-mosquitto_passwd /mosquitto/passwords homebridge
+mosquitto_passwd /mosquittoVolume/passwords devices
+mosquitto_passwd /mosquittoVolume/passwords homebridge
 ```
 
 
@@ -152,8 +155,9 @@ services:
   #   extra_hosts:
   #     - "mosquitto:192.168.1.12"
 
+  # https://hub.docker.com/r/homeassistant/home-assistant/tags
   homeassistant:
-    image: "ghcr.io/home-assistant/home-assistant:2023.3.1"
+    image: "ghcr.io/home-assistant/home-assistant:2023.11"
     container_name: "homeassistant"
     hostname: "homeassistant"
     restart: unless-stopped
@@ -183,11 +187,14 @@ services:
     restart: unless-stopped
     ports:
       - "1883:1883"
+    # Use "/mosquittoVolume" in place of "/mosquitto" because the "eclipse-mosquitto" image creates volumes in "/mosquitto" which interferes.
     volumes:
-      - /mosquitto:/mosquitto
+      - /mosquitto:/mosquittoVolume
+    entrypoint: "/usr/sbin/mosquitto -c /mosquittoVolume/config/mosquitto.conf"
 
+  # https://hub.docker.com/r/koenkk/zigbee2mqtt/tags
   zigbee2mqtt:
-    image: "koenkk/zigbee2mqtt:1.30.4"
+    image: "koenkk/zigbee2mqtt:1.33.2"
     container_name: zigbee2mqtt
     restart: unless-stopped
     volumes:

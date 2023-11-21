@@ -34,12 +34,17 @@ Pinout :
 - P24: PWM, channel 2
 - P26: PWM, channel 3
 
-- Activate flags 10, 16, 17, 18, 27
+- Activate flags 18, 27
 - Uptime seconds required to mark boot as ok to 5
 
 - To disable automatic power on
   - Click on "Filesystem"/"Create File" and name it "early.bat".
-  - Click on "/early.bat", and set `backlog ; led_dimmer 0 ; led_basecolor_rgbcw #0000000000 ; led_enableAll 0`
+  - Click on "/early.bat", and set this (the goal of `addEventHandler` is to re do `led_enableAll 0` on MQTT connection because for an unknown reason it always re set it to 1):
+```
+backlog ; led_dimmer 0 ; led_basecolor_rgb #000000 ; led_enableAll 0
+
+addEventHandler MQTTState 1 backlog ; led_dimmer 0 ; led_basecolor_rgb #000000 ; led_enableAll 0
+```
   - Click on "Save".
 
 
